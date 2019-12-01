@@ -138,10 +138,10 @@ Sprite.prototype.mover = function (map, dt) {
     map.cells[this.gy][this.gx].objeto = null;
     map.cells[this.gy][this.gx].tipoObjeto = undefined;
   }
-  if(this.vx > 0 && map.cells[this.gy][this.gx+1].tipo != "vazio") {
+  if(this.vx > 0 && !map.cells[this.gy][this.gx+1].andavel) {
     this.x += Math.min((this.gx+1)*map.SIZE - (this.x+this.SIZE/2),this.vx*dt);
 	
-  } else if(this.vx < 0 && map.cells[this.gy][this.gx-1].tipo != "vazio"){
+  } else if(this.vx < 0 && !map.cells[this.gy][this.gx-1].andavel){
       this.x += Math.max((this.gx)*map.SIZE - (this.x-this.SIZE/2),this.vx*dt);
 
 	}
@@ -149,10 +149,10 @@ Sprite.prototype.mover = function (map, dt) {
     this.x = this.x + this.vx*dt;
   }
   
-  if(this.vy > 0 && map.cells[this.gy+1][this.gx].tipo != "vazio"){
+  if(this.vy > 0 && !map.cells[this.gy+1][this.gx].andavel){
     this.y += Math.min((this.gy+1)*map.SIZE - (this.y+this.SIZE/2),this.vy*dt);
 
-  } else if(this.vy < 0 && map.cells[this.gy-1][this.gx].tipo != "vazio"){
+  } else if(this.vy < 0 && !map.cells[this.gy-1][this.gx].andavel){
       this.y += Math.max((this.gy)*map.SIZE - (this.y-this.SIZE/2),this.vy*dt);
 	}
   else {
