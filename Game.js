@@ -10,13 +10,14 @@ var frame = 0;
 var fim = false;
 var isMainMenu = true;
 var numPlayers = 2;
+var selectedOpt = 0;
 var explosionHandler = []; // suaviza explosoes em cadeia
 var explosionDelay = 0.1; // suaviza explosoes em cadeia
 
 function init(){
   canvas = document.getElementsByTagName('canvas')[0];
-  canvas.width = (13*40);
-  canvas.height = (13*40)+20;
+  canvas.width = (15*40);
+  canvas.height = (15*40)+20;
   ctx = canvas.getContext("2d");
   images = new ImageLoader();
 	images.load("pc", "assets/BombermanDSAlpha.png");
@@ -25,8 +26,70 @@ function init(){
 	images.load("powerups", "assets/Powerups.png");
 	images.load("MainMenuBG", "assets/MMenuBg.png");
 	images.load("expPar", "assets/exp2_0.png");
+	images.load("MapMenuBG", "assets/MapMenu.png")
+	
+	isMainMenu = true;
+  initControls();
+  requestAnimationFrame(mainMenu);
+}
+
+function gameStart() {
   map = new Map(Math.floor(canvas.height/40), Math.floor(canvas.width/40));
-  //map.images = images;
+	//map.images = images;
+	
+	var tiles = [];
+	if(selectedOpt == 0) {
+		map.setCells([
+		[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+		[1,0,0,2,2,2,2,2,2,2,2,2,2,2,1],
+		[1,0,1,2,1,2,1,2,1,2,1,2,1,2,1],
+		[1,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+		[1,2,1,2,1,2,1,2,1,2,1,2,1,2,1],
+		[1,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+		[1,2,1,2,1,2,1,2,1,2,1,2,1,2,1],
+		[1,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+		[1,2,1,2,1,2,1,2,1,2,1,2,1,2,1],
+		[1,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+		[1,2,1,2,1,2,1,2,1,2,1,2,1,2,1],
+		[1,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+		[1,2,1,2,1,2,1,2,1,2,1,2,1,0,1],
+		[1,2,2,2,2,2,2,2,2,2,2,2,0,0,1],
+		[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+		]);
+		
+		tiles = [
+		{ox:3, oy:2, w:30, h:30 , frames:1},
+		{ox:37, oy:2, w:29, h:30 , frames:1},
+		{ox:70, oy:2, w:30, h:30 , frames:1},
+		];
+	}
+	 else {
+		map.setCells([
+		[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+		[1,0,0,2,3,2,2,2,2,2,3,2,2,2,1],
+		[1,0,1,2,1,2,1,2,1,2,1,2,1,2,1],
+		[1,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+		[1,2,1,2,1,2,1,2,1,2,1,2,1,2,1],
+		[1,2,3,2,2,2,2,2,2,2,2,2,3,2,1],
+		[1,2,1,2,1,2,1,2,1,2,1,2,1,2,1],
+		[1,2,2,2,2,3,2,2,2,3,2,2,2,2,1],
+		[1,2,1,2,1,2,1,2,1,2,1,2,1,2,1],
+		[1,2,3,2,2,2,2,2,2,2,2,2,3,2,1],
+		[1,2,1,2,1,2,1,2,1,2,1,2,1,2,1],
+		[1,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+		[1,2,1,2,1,2,1,2,1,2,1,2,1,0,1],
+		[1,2,2,2,3,2,2,2,2,2,3,2,0,0,1],
+		[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+		]);
+		
+		tiles = [
+		{ox:104, oy:2, w:30, h:30 , frames:1},
+		{ox:269, oy:2, w:30, h:30 , frames:1},
+		{ox:236, oy:2, w:30, h:30 , frames:1},
+		{ox:201, oy:2, w:30, h:30 , frames:1},
+		];
+	 }
+	 /*
   map.setCells([
     [1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,2,2,2,2,2,2,2,2,2,1],
@@ -42,11 +105,8 @@ function init(){
     [1,2,2,2,2,2,2,2,2,2,0,0,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1],
 	]);
-	images.tileCut = [
-		{ox:3, oy:2, w:30, h:30 , frames:1},
-		{ox:37, oy:2, w:29, h:30 , frames:1},
-		{ox:70, oy:2, w:30, h:30 , frames:1},
-	];
+	*/
+	images.tileCut = tiles;
 	images.powerupCut = [
     {ox:4, oy:4, w:22, h:22 , frames:1},
     {ox:52, oy:4, w:22, h:22 , frames:1},
@@ -79,23 +139,26 @@ function init(){
     {row: 3, col:0, w: 21.5, h:32 , frames:5, v: 8},
 	];
 
-  pc2 = new Sprite();
-  pc2.id = "2";
-  pc2.x = 460;
-  pc2.y = 380+80;
-  pc2.vidas = 3;
-  pc2.imunidade = 1;
-	pc2.imgkey = "pc";
-	pc2.poses = [
-    {row: 0, col:0, w: 21.5, h:32 , frames:5, v: 8},
-    {row: 1, col:0, w: 21.5, h:33.2 , frames:5, v: 8},
-    {row: 2, col:0, w: 21.5, h:33.2 , frames:5, v: 8},
-    {row: 3, col:0, w: 21.5, h:32 , frames:5, v: 8},
-	];
-	
-	isMainMenu = true;
-  initControls();
-  requestAnimationFrame(mainMenu);
+	if(numPlayers == 1) {
+		// a fazer
+	}
+	else if(numPlayers == 2) {
+		pc2 = new Sprite();
+		pc2.id = "2";
+		pc2.x = 460+80;
+		pc2.y = 380+160;
+		pc2.vidas = 3;
+		pc2.imunidade = 1;
+		pc2.imgkey = "pc";
+		pc2.poses = [
+			{row: 0, col:0, w: 21.5, h:32 , frames:5, v: 8},
+			{row: 1, col:0, w: 21.5, h:33.2 , frames:5, v: 8},
+			{row: 2, col:0, w: 21.5, h:33.2 , frames:5, v: 8},
+			{row: 3, col:0, w: 21.5, h:32 , frames:5, v: 8},
+		];
+		requestAnimationFrame(passo);
+	}
+
 }
 
 function mainMenu(t) {
@@ -127,9 +190,35 @@ function mainMenu(t) {
 	anterior = t;
 }
 
+function mapSelection(t) {
+	dt = (t-anterior)/1000;
+	currentAnimation = requestAnimationFrame(mapSelection);
+	ctx.clearRect(0,0, canvas.width, canvas.height);
+	images.drawBG(ctx, "MapMenuBG", canvas.width, canvas.height);
+	ctx.fillText("P1: <WASD,Spacebar>   P2: <Setas,ENTER>", canvas.width/2, canvas.height-30);
+	ctx.save();
+	if(this.selectedOpt == 0) {
+		ctx.fillStyle = "yellow";
+		ctx.fillText("Mapa classico", canvas.width/2, canvas.height-80);
+	} else {
+		ctx.fillStyle = "black";
+	}
+	ctx.fillText("Mapa 1 - Castelo", 150, 100);
+	ctx.restore();
+	ctx.save();
+	if(this.selectedOpt == 1) {
+		ctx.fillStyle = "yellow";
+		ctx.fillText("Possui terreno que causa lentidao", canvas.width/2, canvas.height-80);
+	} else {
+		ctx.fillStyle = "black";
+	}
+	ctx.fillText("Mapa 2 - Floresta", 450, 100);
+	ctx.restore();
+	
+	anterior = t;
+}
 
-
-function passo(t){
+function passo(t) {
   dt = (t-anterior)/1000;
   requestAnimationFrame(passo);
   ctx.clearRect(0,0, canvas.width, canvas.height);
@@ -199,13 +288,14 @@ function chainReaction(gy, gx) {
 
 function explodeParede(map, gy, gx) {
 	var expPar = new Sprite();
-					expPar.x = gx * map.SIZE + 20;
-					expPar.y = gy * map.SIZE + 20;
-					expPar.w = 64;
-					expPar.h = 64;
-					expPar.duracao = 0.25;
-					expPar.imgkey = "expPar";
-					map.paredeExplosion.push(expPar);
+	expPar.x = gx * map.SIZE + 20;
+	expPar.y = gy * map.SIZE + 20;
+	expPar.w = 64;
+	expPar.h = 64;
+	expPar.duracao = 0.25;
+	expPar.imgkey = "expPar";
+	map.paredeExplosion.push(expPar);
+	map.cells[gy][gx].andavel = true;
 }
 
 function explodir(bomb, map) {
@@ -219,7 +309,8 @@ function explodir(bomb, map) {
 	var atingiup2 = false;
 	
 	// tira bomba do grid, se for trata-la como parede
-	map.cells[gy][gx].tipo = "vazio";
+	map.cells[gy][gx].tipo = map.cells[gy][gx].tipoOrig;
+	map.cells[gy][gx].andavel = true;
 	queueExplosion(map, gx, gy, 0);
 	
 	// caso fique em cima da bomba
@@ -366,6 +457,7 @@ function dropBomb(player, map) {
 		bomb.timer = 2;
 		bomb.power = player.power;
 		map.cells[gy][gx].tipo = "bomba";
+		map.cells[gy][gx].andavel = false;
 		player.bombs.push(bomb);
 		player.cooldown = 0.2;
 	}
@@ -376,7 +468,7 @@ function dropBomb(player, map) {
 function desenhaInfo(ctx) {
   ctx.font = "15px Arial";
   ctx.fillStyle = "blue";
-  ctx.fillText("Player 1: " + pc1.vidas + " vida(s)       " + "Player 2: " + pc2.vidas + " vida(s)", this.canvas.width/2 - 100, 455+80);
+  ctx.fillText("Player 1: " + pc1.vidas + " vida(s)       " + "Player 2: " + pc2.vidas + " vida(s)", this.canvas.width/2 - 100, 455+160);
   if(pc1.vidas <= 0) {
 	ctx.font = "50px Arial";
 	ctx.fillStyle = "blue";
@@ -504,6 +596,37 @@ function menuControls(e) {
 	switch(e.keyCode) {
 		case 13:
 			if(this.isMainMenu) {
+				cancelAnimationFrame(currentAnimation);
+				currentAnimation = requestAnimationFrame(mapSelection);
+				this.isMainMenu = false;
+				break;
+			} else {
+				cancelAnimationFrame(currentAnimation);
+				initControls();
+				gameStart();
+				currentAnimation = requestAnimationFrame(passo);
+			}
+			break;
+		case 37:
+			this.selectedOpt = 0;
+			break;
+		case 39:
+			this.selectedOpt = 1;
+			break;
+		case 38:
+			if(this.isMainMenu) this.numPlayers = 1;
+			break;
+		case 40:
+			if(this.isMainMenu) this.numPlayers = 2;
+			break;
+	}
+}
+
+/*
+function menuControls(e) {
+	switch(e.keyCode) {
+		case 13:
+			if(this.isMainMenu) {
 				this.isMainMenu = false;
 				cancelAnimationFrame(currentAnimation);
 				initControls();
@@ -514,3 +637,4 @@ function menuControls(e) {
 			break;
 	}
 }
+*/
