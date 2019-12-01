@@ -12,8 +12,9 @@ function Sprite(){
   this.imgkey = "pc";
   this.cooldown = 1;
   this.bombs = [];
-  this.maxBombs = 3;
+  this.maxBombs = 1;
   this.power = 1;
+  this.speedBonus = 0;
 }
 
 Sprite.prototype.desenhar = function (ctx, images) {
@@ -128,6 +129,9 @@ Sprite.prototype.mover = function (map, dt) {
         break;
       case 1:
         this.maxBombs++;
+        break;
+      case 2:
+        this.speedBonus+=15;
         break;
       default: console.log("Powerup com tipo errado!");
     }

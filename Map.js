@@ -117,7 +117,7 @@ Map.prototype.spawnPowerup = function(dt) {
 // Funçao pra spawn um numero fixo de powerups
 Map.prototype.spawnPowerupFixo = function(qtd) {
 	for(var i = 0; i < qtd; i++) {
-		var tipo = Math.floor(Math.random()*2);
+		var tipo = Math.floor(Math.random()*3);
 		var gy = 0;
 		var gx = 0;
 		// busca local possivel
