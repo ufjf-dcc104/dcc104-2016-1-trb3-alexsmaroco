@@ -120,6 +120,11 @@ Sprite.prototype.mover = function (map, dt) {
 
   this.gx = Math.floor(this.x/map.SIZE);
   this.gy = Math.floor(this.y/map.SIZE);
+
+  if(map.cells[this.gy][this.gx].tipo == "lama") {
+    this.vx*=0.75;
+    this.vy*=0.75;
+  }
   
   // testa se pisou em powerup
   if(map.cells[this.gy][this.gx].tipoObjeto === "powerup") {
