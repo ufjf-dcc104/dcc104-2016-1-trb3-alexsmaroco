@@ -56,6 +56,22 @@ Sprite.prototype.desenharPose = function (ctx, images) {
   ctx.restore();
 };
 
+Sprite.prototype.desenharInimigo = function(ctx, images) {
+	this.w = this.poses[this.pose].w;
+	this.h = this.poses[this.pose].h;
+	ctx.save();
+	ctx.translate(this.x, this.y);
+	images.drawFrame(ctx,
+    this.imgKey,
+    this.poses[this.pose].row,
+    Math.floor(this.frame),
+    30,25,
+	this.poses[this.pose].w, this.poses[this.pose].h,
+	this.poses[this.pose].w*1.5, this.poses[this.pose].h*1.5
+  );
+  ctx.restore();
+}
+
 /*
 Sprite.prototype.desenharPose = function (ctx, images) {
   ctx.save();
