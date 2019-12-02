@@ -140,7 +140,8 @@ function gameStart() {
 	];
 
 	if(numPlayers == 1) {
-		// a fazer
+
+		requestAnimationFrame(passo1P);
 	}
 	else if(numPlayers == 2) {
 		pc2 = new Sprite();
@@ -156,7 +157,7 @@ function gameStart() {
 			{row: 2, col:0, w: 21.5, h:33.2 , frames:5, v: 8},
 			{row: 3, col:0, w: 21.5, h:32 , frames:5, v: 8},
 		];
-		requestAnimationFrame(passo);
+		requestAnimationFrame(passo2P);
 	}
 
 }
@@ -218,9 +219,41 @@ function mapSelection(t) {
 	anterior = t;
 }
 
-function passo(t) {
+function passo1P(t) {
   dt = (t-anterior)/1000;
-  requestAnimationFrame(passo);
+  currentAnimation = requestAnimationFrame(passo1P);
+  ctx.clearRect(0,0, canvas.width, canvas.height);
+  if(!this.fim) {
+		// countdown das bombas
+		for (var i = pc1.bombs.length-1;i>=0; i--) {
+			pc1.bombs[i].timer-=dt;
+			if(pc1.bombs[i].timer < 0) {
+				explodir(pc1.bombs[i], map);
+				pc1.bombs.splice(i, 1);
+			}
+		}
+		explosionDelay-=dt;
+		if(explosionHandler.length > 0 && explosionDelay <= 0) {
+			var prox = explosionHandler.shift();
+			explodir(prox, map);
+			explosionDelay = 0.1;
+		}
+		// spawna powerups de tempos em tempos !! pode spawnar mais de um no mesmo lugar
+		//map.spawnPowerup(dt);
+		pc1.mover(map, dt);
+
+	}
+
+	map.desenhar(ctx, images);
+	pc1.desenhar(ctx, images);
+
+  desenhaInfo1P(ctx);
+	anterior = t;
+}
+
+function passo2P(t) {
+  dt = (t-anterior)/1000;
+  currentAnimation = requestAnimationFrame(passo2P);
   ctx.clearRect(0,0, canvas.width, canvas.height);
   if(!this.fim) {
 		// countdown das bombas
@@ -253,7 +286,7 @@ function passo(t) {
 	map.desenhar(ctx, images);
 	pc1.desenhar(ctx, images);
 	pc2.desenhar(ctx, images);
-  desenhaInfo(ctx);
+  desenhaInfo2P(ctx);
 	anterior = t;
 }
 
@@ -317,7 +350,7 @@ function explodir(bomb, map) {
 	if(pc1.gx == gx && pc1.gy == gy) {
 		atingiup1 = true;
 	}
-	if(pc2.gx == gx && pc2.gy == gy) {
+	if(numPlayers == 2 && pc2.gx == gx && pc2.gy == gy) {
 		atingiup2 = true;
 	}
 	// verifica os arredores
@@ -341,7 +374,7 @@ function explodir(bomb, map) {
 			if(pc1.gx == gx && pc1.gy == gy-i) {
 				atingiup1 = true;
 			}
-			if(pc2.gx == gx && pc2.gy == gy-i) {
+			if(numPlayers == 2 && pc2.gx == gx && pc2.gy == gy-i) {
 				atingiup2 = true;
 			}
 			if(destruir1) queueExplosion(map, gx, gy-i, 1);
@@ -365,7 +398,7 @@ function explodir(bomb, map) {
 			if(pc1.gx == gx && pc1.gy == gy+i) {
 				atingiup1 = true;
 			}
-			if(pc2.gx == gx && pc2.gy == gy+i) {
+			if(numPlayers == 2 && pc2.gx == gx && pc2.gy == gy+i) {
 				atingiup2 = true;
 			}
 			if(destruir2) queueExplosion(map, gx, gy+i, 1);
@@ -389,7 +422,7 @@ function explodir(bomb, map) {
 			if(pc1.gx == gx-i && pc1.gy == gy) {
 				atingiup1 = true;
 			}
-			if(pc2.gx == gx-i && pc2.gy == gy) {
+			if(numPlayers == 2 && pc2.gx == gx-i && pc2.gy == gy) {
 				atingiup2 = true;
 			}
 			if(destruir3) queueExplosion(map, gx-i, gy, 2);
@@ -422,7 +455,7 @@ function explodir(bomb, map) {
 			if(pc1.gx == gx+i && pc1.gy == gy) {
 				atingiup1 = true;
 			}
-			if(pc2.gx == gx+i && pc2.gy == gy) {
+			if(numPlayers == 2 && pc2.gx == gx+i && pc2.gy == gy) {
 				atingiup2 = true;
 			}
 			if(destruir4) queueExplosion(map, gx+i, gy, 2);
@@ -433,7 +466,7 @@ function explodir(bomb, map) {
 		pc1.vidas--;
 		pc1.imunidade = 1;
 	}
-	if(atingiup2 && pc2.imunidade < 0) {
+	if(numPlayers == 2 && atingiup2 && pc2.imunidade < 0) {
 		pc2.vidas--;
 		pc2.imunidade = 1;
 	}
@@ -463,9 +496,19 @@ function dropBomb(player, map) {
 	}
 }
 
+function desenhaInfo1P(ctx) {
+  ctx.font = "15px Arial";
+  ctx.fillStyle = "blue";
+  ctx.fillText("Player 1: " + pc1.vidas + " vida(s)", this.canvas.width/2 - 50, 455+160);
+  if(pc1.vidas <= 0) {
+		ctx.font = "50px Arial";
+		ctx.fillStyle = "blue";
+		ctx.fillText("Você perdeu!", this.canvas.width/2 - 50, this.canvas.height/2);
+    this.fim = true;
+  }
+}
 
-
-function desenhaInfo(ctx) {
+function desenhaInfo2P(ctx) {
   ctx.font = "15px Arial";
   ctx.fillStyle = "blue";
   ctx.fillText("Player 1: " + pc1.vidas + " vida(s)       " + "Player 2: " + pc2.vidas + " vida(s)", this.canvas.width/2 - 100, 455+160);
@@ -477,8 +520,8 @@ function desenhaInfo(ctx) {
   }
   if(pc2.vidas <= 0) {
     ctx.font = "50px Arial";
-	ctx.fillStyle = "blue";
-	ctx.fillText("Player 1 venceu!", this.canvas.width/2 - 50, this.canvas.height/2);
+		ctx.fillStyle = "blue";
+		ctx.fillText("Player 1 venceu!", this.canvas.width/2 - 50, this.canvas.height/2);
     this.fim = true;
   }
 }
@@ -604,7 +647,7 @@ function menuControls(e) {
 				cancelAnimationFrame(currentAnimation);
 				initControls();
 				gameStart();
-				currentAnimation = requestAnimationFrame(passo);
+				//currentAnimation = requestAnimationFrame(passo);
 			}
 			break;
 		case 37:
