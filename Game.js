@@ -26,7 +26,8 @@ function init(){
 	images.load("powerups", "assets/Powerups.png");
 	images.load("MainMenuBG", "assets/MMenuBg.png");
 	images.load("expPar", "assets/exp2_0.png");
-	images.load("MapMenuBG", "assets/MapMenu.png")
+	images.load("MapMenuBG", "assets/MapMenu.png");
+	images.load("enemy", "assets/enemies.png");
 	
 	isMainMenu = true;
   initControls();
@@ -139,8 +140,22 @@ function gameStart() {
     {row: 3, col:0, w: 21.5, h:32 , frames:5, v: 8},
 	];
 
-	if(numPlayers == 1) {
-
+	if(numPlayers == 1) { // torna o player 2 em um inimigo
+		pc2 = new Sprite();
+		var enemyPoses = [
+		{row: 0, col:0, w: 18, h:18, frames:3, v: 8},
+		];
+		pc2.poses = enemyPoses;
+		pc2.gx = 13;
+		pc2.gy = 13;
+		pc2.x = pc2.gx*map.SIZE-map.SIZE/2;
+		pc2.y = pc2.gy*map.SIZE-map.SIZE/2;
+		pc2.speed = 75;
+		pc2.vidas = 2;
+		pc2.xdest = pc2.x;
+		pc2.ydest = pc2.y;
+		pc2.imunidade = 0;
+		pc2.imgKey = "enemy";
 		requestAnimationFrame(passo1P);
 	}
 	else if(numPlayers == 2) {
@@ -241,14 +256,18 @@ function passo1P(t) {
 		// spawna powerups de tempos em tempos !! pode spawnar mais de um no mesmo lugar
 		//map.spawnPowerup(dt);
 		pc1.mover(map, dt);
-
+		//AIMovement(map,pc2,dt);
 	}
 
 	map.desenhar(ctx, images);
 	pc1.desenhar(ctx, images);
-
+	pc2.desenharInimigo(ctx, images);
   desenhaInfo1P(ctx);
 	anterior = t;
+}
+
+function AIMovement(map,c,dt) {
+	
 }
 
 function passo2P(t) {
@@ -534,104 +553,156 @@ function initControls(){
 	}
 	else {
 		removeEventListener('keydown', menuControls);
+		if(numPlayers == 2) {
+			addEventListener('keydown', function(e){
+				switch (e.keyCode) {
+					// player 1
+					case 32:
+					dropBomb(pc1, map);
+					break;
+					case 65:
+							pc1.vx = -100 - pc1.speedBonus;
+							pc1.vy = 0;
+							pc1.pose = 3;
+							e.preventDefault();
+							break;
+						case 87:
+							pc1.vy = -100 - pc1.speedBonus;
+							pc1.vx = 0;
+							pc1.pose = 2;
+							e.preventDefault();
+							break;
+						case 68:
+							pc1.vx = 100 + pc1.speedBonus;
+							pc1.vy = 0;
+							pc1.pose = 1;
+							e.preventDefault();
+							break;
+						case 83:
+							pc1.vy = 100 + pc1.speedBonus;
+							pc1.vx = 0;
+							pc1.pose = 0;
+							e.preventDefault();
+							break;
+				
+					// player 2
+					case 13:
+					dropBomb(pc2, map);
+					break;
+						case 37:
+							pc2.vx = -100 - pc2.speedBonus;
+							pc2.vy = 0;
+							pc2.pose = 3;
+							e.preventDefault();
+							break;
+						case 38:
+							pc2.vy = -100 - pc2.speedBonus;
+							pc2.vx = 0;
+							pc2.pose = 2;
+							e.preventDefault();
+							break;
+						case 39:
+							pc2.vx = 100 + pc2.speedBonus;
+							pc2.vy = 0;
+							pc2.pose = 1;
+							e.preventDefault();
+							break;
+						case 40:
+							pc2.vy = 100 + pc2.speedBonus;
+							pc2.vx = 0;
+							pc2.pose = 0;
+							e.preventDefault();
+							break;
+						default:
+				}
+			});
+			addEventListener('keyup', function(e){
+				switch (e.keyCode) {
+				//player 1
+				case 65:
+						pc1.vx = 0;
+						break;
+					case 87:
+						pc1.vy = 0;
+						break;
+					case 68:
+						pc1.vx = 0;
+						break;
+					case 83:
+						pc1.vy = 0;
+						break;
+			
+				// player 2
+					case 37:
+				pc2.vx = 0;
+						break;
+					case 38:
+						pc2.vy = 0;
+						break;
+					case 39:
+						pc2.vx = 0;
+						break;
+					case 40:
+						pc2.vy = 0;
+						break;
+					default:
 
-		addEventListener('keydown', function(e){
-			switch (e.keyCode) {
+				}
+			});
+		} else {
+				addEventListener('keydown', function(e){
+					switch (e.keyCode) {
+						// player 1
+						case 32:
+							dropBomb(pc1, map);
+							break;
+						case 65:
+								pc1.vx = -100 - pc1.speedBonus;
+								pc1.vy = 0;
+								pc1.pose = 3;
+								e.preventDefault();
+								break;
+							case 87:
+								pc1.vy = -100 - pc1.speedBonus;
+								pc1.vx = 0;
+								pc1.pose = 2;
+								e.preventDefault();
+								break;
+							case 68:
+								pc1.vx = 100 + pc1.speedBonus;
+								pc1.vy = 0;
+								pc1.pose = 1;
+								e.preventDefault();
+								break;
+							case 83:
+								pc1.vy = 100 + pc1.speedBonus;
+								pc1.vx = 0;
+								pc1.pose = 0;
+								e.preventDefault();
+								break;
+							default:
+					}
+				});
+				addEventListener('keyup', function(e){
+					switch (e.keyCode) {
+					//player 1
+					case 65:
+							pc1.vx = 0;
+							break;
+						case 87:
+							pc1.vy = 0;
+							break;
+						case 68:
+							pc1.vx = 0;
+							break;
+						case 83:
+							pc1.vy = 0;
+							break;
+						default:
 
-			// player 1
-			case 32:
-			dropBomb(pc1, map);
-			break;
-			case 65:
-					pc1.vx = -100 - pc1.speedBonus;
-					pc1.vy = 0;
-					pc1.pose = 3;
-					e.preventDefault();
-					break;
-				case 87:
-					pc1.vy = -100 - pc1.speedBonus;
-					pc1.vx = 0;
-					pc1.pose = 2;
-					e.preventDefault();
-					break;
-				case 68:
-					pc1.vx = 100 + pc1.speedBonus;
-					pc1.vy = 0;
-					pc1.pose = 1;
-					e.preventDefault();
-					break;
-				case 83:
-					pc1.vy = 100 + pc1.speedBonus;
-					pc1.vx = 0;
-					pc1.pose = 0;
-					e.preventDefault();
-					break;
-		
-			// player 2
-			case 13:
-			dropBomb(pc2, map);
-			break;
-				case 37:
-					pc2.vx = -100 - pc2.speedBonus;
-					pc2.vy = 0;
-					pc2.pose = 3;
-					e.preventDefault();
-					break;
-				case 38:
-					pc2.vy = -100 - pc2.speedBonus;
-					pc2.vx = 0;
-					pc2.pose = 2;
-					e.preventDefault();
-					break;
-				case 39:
-					pc2.vx = 100 + pc2.speedBonus;
-					pc2.vy = 0;
-					pc2.pose = 1;
-					e.preventDefault();
-					break;
-				case 40:
-					pc2.vy = 100 + pc2.speedBonus;
-					pc2.vx = 0;
-					pc2.pose = 0;
-					e.preventDefault();
-					break;
-				default:
-
+					}
+				});
 			}
-		});
-		addEventListener('keyup', function(e){
-			switch (e.keyCode) {
-			//player 1
-			case 65:
-					pc1.vx = 0;
-					break;
-				case 87:
-					pc1.vy = 0;
-					break;
-				case 68:
-					pc1.vx = 0;
-					break;
-				case 83:
-					pc1.vy = 0;
-					break;
-		
-			// player 2
-				case 37:
-			pc2.vx = 0;
-					break;
-				case 38:
-					pc2.vy = 0;
-					break;
-				case 39:
-					pc2.vx = 0;
-					break;
-				case 40:
-					pc2.vy = 0;
-					break;
-				default:
-
-			}
-		});
 	}
 }
 
