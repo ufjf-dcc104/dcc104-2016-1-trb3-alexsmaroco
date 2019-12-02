@@ -35,7 +35,7 @@ function init(){
 }
 
 function gameStart() {
-  map = new Map(Math.floor(canvas.height/40), Math.floor(canvas.width/40));
+	map = new Map(Math.floor(canvas.height/40), Math.floor(canvas.width/40));
 	//map.images = images;
 	
 	var tiles = [];
@@ -124,7 +124,7 @@ function gameStart() {
     {ox:36, oy:1, w:16, h:16 , frames:1},
 	];
 
-  //map.cooldownPowerup = 5;
+  map.spawnPowerupFixo(15);
   pc1 = new Sprite();
   pc1.id = "1";
   pc1.x = 60;
@@ -151,11 +151,12 @@ function gameStart() {
 		pc2.x = pc2.gx*map.SIZE-map.SIZE/2;
 		pc2.y = pc2.gy*map.SIZE-map.SIZE/2;
 		pc2.speed = 75;
-		pc2.vidas = 2;
+		pc2.vidas = 10;
 		pc2.xdest = pc2.x;
 		pc2.ydest = pc2.y;
 		pc2.imunidade = 0;
 		pc2.imgKey = "enemy";
+		pc2.movCooldown = 2;
 		requestAnimationFrame(passo1P);
 	}
 	else if(numPlayers == 2) {
@@ -256,7 +257,7 @@ function passo1P(t) {
 		// spawna powerups de tempos em tempos !! pode spawnar mais de um no mesmo lugar
 		//map.spawnPowerup(dt);
 		pc1.mover(map, dt);
-		//AIMovement(map,pc2,dt);
+		AIMovement(map,pc2,dt);
 	}
 
 	map.desenhar(ctx, images);
@@ -267,7 +268,53 @@ function passo1P(t) {
 }
 
 function AIMovement(map,c,dt) {
-	
+	c.movCooldown-=dt;
+	if(c.movCooldown < 0) {
+		var gx = c.gx;
+		var gy = c.gy;
+		var sentido, direcao = 0;
+		var cont = 0;
+		while(!c.isMoving && cont < 10) {
+			direcao = Math.floor(Math.random()*8)%2; // eixo x ou y
+			sentido = Math.floor(Math.random()*8)%2; // sentido positivo ou negativo
+			if(direcao == 0) { // eixo x
+				if(sentido == 0) {
+					if(gx-1 >= 0 && map.cells[gy][gx-1].tipo != "paredeInd") {
+						c.gx = gx-1;
+						c.xdest = (c.gx*map.SIZE)-(map.SIZE/2);
+						c.isMoving = true;
+					}
+				} else {
+					if(gx+1 < map.cells[gy].length && map.cells[gy][gx+1].tipo != "paredeInd") {
+						c.gx = gx+1;
+						c.xdest = (c.gx*map.SIZE)-(map.SIZE/2);
+						c.isMoving = true;
+					}
+				}
+			} else { // eixo y
+				if(sentido == 0) {
+					if(gy-1 >= 0 && map.cells[gy-1][gx].tipo != "paredeInd") {
+						c.gy = gy-1;
+						c.ydest = (c.gy*map.SIZE)-(map.SIZE/2);
+						c.isMoving = true;
+					}
+				} else {
+					if(gy+1 < map.cells.length && map.cells[gy+1][gx].tipo != "paredeInd") {
+						c.gy = gy+1;
+						c.ydest = (c.gy*map.SIZE)-(map.SIZE/2);
+						c.isMoving = true;
+					}
+				}
+			}
+		}
+		c.movCooldown = 1;
+		cont++; // evita agarrar no loop por causa do random
+	}
+	c.moverAI(map,dt);
+	if(pc1.imunidade <= 0 && pc1.gx == c.gx && pc1.gy == c.gy) {
+		pc1.imunidade = 2;
+		pc1.vidas--;
+	}
 }
 
 function passo2P(t) {
@@ -369,7 +416,7 @@ function explodir(bomb, map) {
 	if(pc1.gx == gx && pc1.gy == gy) {
 		atingiup1 = true;
 	}
-	if(numPlayers == 2 && pc2.gx == gx && pc2.gy == gy) {
+	if(pc2.gx == gx && pc2.gy == gy) {
 		atingiup2 = true;
 	}
 	// verifica os arredores
@@ -393,7 +440,7 @@ function explodir(bomb, map) {
 			if(pc1.gx == gx && pc1.gy == gy-i) {
 				atingiup1 = true;
 			}
-			if(numPlayers == 2 && pc2.gx == gx && pc2.gy == gy-i) {
+			if(pc2.gx == gx && pc2.gy == gy-i) {
 				atingiup2 = true;
 			}
 			if(destruir1) queueExplosion(map, gx, gy-i, 1);
@@ -417,7 +464,7 @@ function explodir(bomb, map) {
 			if(pc1.gx == gx && pc1.gy == gy+i) {
 				atingiup1 = true;
 			}
-			if(numPlayers == 2 && pc2.gx == gx && pc2.gy == gy+i) {
+			if(pc2.gx == gx && pc2.gy == gy+i) {
 				atingiup2 = true;
 			}
 			if(destruir2) queueExplosion(map, gx, gy+i, 1);
@@ -441,7 +488,7 @@ function explodir(bomb, map) {
 			if(pc1.gx == gx-i && pc1.gy == gy) {
 				atingiup1 = true;
 			}
-			if(numPlayers == 2 && pc2.gx == gx-i && pc2.gy == gy) {
+			if(pc2.gx == gx-i && pc2.gy == gy) {
 				atingiup2 = true;
 			}
 			if(destruir3) queueExplosion(map, gx-i, gy, 2);
@@ -474,7 +521,7 @@ function explodir(bomb, map) {
 			if(pc1.gx == gx+i && pc1.gy == gy) {
 				atingiup1 = true;
 			}
-			if(numPlayers == 2 && pc2.gx == gx+i && pc2.gy == gy) {
+			if(pc2.gx == gx+i && pc2.gy == gy) {
 				atingiup2 = true;
 			}
 			if(destruir4) queueExplosion(map, gx+i, gy, 2);
@@ -485,7 +532,7 @@ function explodir(bomb, map) {
 		pc1.vidas--;
 		pc1.imunidade = 1;
 	}
-	if(numPlayers == 2 && atingiup2 && pc2.imunidade < 0) {
+	if(atingiup2 && pc2.imunidade < 0) {
 		pc2.vidas--;
 		pc2.imunidade = 1;
 	}
@@ -518,13 +565,19 @@ function dropBomb(player, map) {
 function desenhaInfo1P(ctx) {
   ctx.font = "15px Arial";
   ctx.fillStyle = "blue";
-  ctx.fillText("Player 1: " + pc1.vidas + " vida(s)", this.canvas.width/2 - 50, 455+160);
+  ctx.fillText("Player 1: " + pc1.vidas + " vida(s)       " + "Inimigo: " + pc2.vidas + " vida(s)", this.canvas.width/2 - 50, 455+160);
   if(pc1.vidas <= 0) {
 		ctx.font = "50px Arial";
 		ctx.fillStyle = "blue";
 		ctx.fillText("Você perdeu!", this.canvas.width/2 - 50, this.canvas.height/2);
     this.fim = true;
-  }
+	}
+	if(pc2.vidas <= 0) {
+		ctx.font = "50px Arial";
+		ctx.fillStyle = "blue";
+		ctx.fillText("Você venceu!", this.canvas.width/2 - 50, this.canvas.height/2);
+    this.fim = true;
+	}
 }
 
 function desenhaInfo2P(ctx) {

@@ -188,3 +188,18 @@ Sprite.prototype.mover = function (map, dt) {
   
 };
 
+Sprite.prototype.moverAI = function(map, dt) {
+	this.imunidade-=dt;
+	if(this.x != this.xdest || this.y != this.ydest) {
+		this.isMoving = true;
+		this.x+=(this.xdest-this.x < 0)?-1:1;
+		this.y+=(this.ydest-this.y < 0)?-1:1;
+		this.frame+=0.1;
+		if(this.frame > 2) {
+			this.frame = 0;
+		}
+	} else {
+		this.isMoving = false;
+		return;
+	}
+}
